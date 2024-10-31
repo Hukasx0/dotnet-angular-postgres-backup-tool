@@ -20,15 +20,25 @@ export interface BackupLogEntry {
 export class AppComponent implements OnInit {
   lastBackup: BackupLogEntry | undefined;
 
+  backups: BackupLogEntry[] = [];
+
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
     this.loadLastBackup();
+    this.loadBackups();
   }
 
   loadLastBackup() {
     this.http.get<BackupLogEntry>('/api/Backup/latest').subscribe(
       backup => this.lastBackup = backup
+    );
+  }
+
+  loadBackups() {
+    this.http.get<BackupLogEntry[]>('/api/Backup').subscribe(
+      // skip first element, as it is the latest backup
+      backups => this.backups = backups.slice(1) 
     );
   }
 

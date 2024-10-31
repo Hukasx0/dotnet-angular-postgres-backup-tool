@@ -1,8 +1,8 @@
-﻿<div class="container mt-4">
+﻿<div>
     <h2>Postgres Database Backup System</h2>
 
     @if (lastBackup) {
-        <div class="mt-4">
+        <div>
         <h3>Latest Backup</h3>
         <p>Database Name: {{ lastBackup.databaseName }}</p>
         <p>Date: {{ lastBackup.backupDate | date:'dd/MM/yyyy HH:mm:ss' }}</p>
@@ -32,8 +32,45 @@
         </div>
     }
     @else {
-        <div class="mt-4">
+        <div>
             <h3>No backup found</h3>
         </div>
     }
+
+    <div style="padding-top: 50px">
+        <h3>Backup History</h3>
+        @for (backup of backups; track backup) {
+            <div>
+                <h3>Backup #{{ backup.id }}</h3>
+                <p>Database Name: {{ backup.databaseName }}</p>
+                <p>Date: {{ backup.backupDate | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+                @switch (backup.status.toString()) {
+                    @case ("0") {
+                        <p>Status: In progress</p>
+                    }
+                    @case ("1") {
+                        <p>Status: Completed</p>
+                    }
+                    @case ("2") {
+                        <p>Status: Failed</p>
+                    }
+                    @default {
+                        <p>Status: Unknown</p>
+                    }
+                }
+                @if (backup.errorMessage) {
+                    <p>Error Message: {{ backup.errorMessage }}</p>
+                }
+                @if (backup.backupSizeBytes) {
+                    <p>Backup Size: {{ backup.backupSizeBytes / (1024 * 1024) | number: '1.0-2' }} MB</p>
+                }
+                @if (backup.duration) {
+                    <p>Duration: {{ formatDuration(backup.duration) }}</p>
+                }
+            </div>
+        }
+        @empty {
+            <p>No backups found</p>
+        }
+    </div>
 </div>
