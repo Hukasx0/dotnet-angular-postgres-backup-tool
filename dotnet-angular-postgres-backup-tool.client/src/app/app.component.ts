@@ -1,11 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 
-interface WeatherForecast {
-  date: string;
-  temperatureC: number;
-  temperatureF: number;
-  summary: string;
+export interface BackupLogEntry {
+  id: number;
+  databaseName: string;
+  backupDate: string;
+  backupPath: string;
+  status: string;
+  errorMessage?: string;
+  backupSizeBytes?: number;
+  duration?: string;
 }
 
 @Component({
@@ -14,24 +18,40 @@ interface WeatherForecast {
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
-  public forecasts: WeatherForecast[] = [];
+  lastBackup: BackupLogEntry | undefined;
 
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    this.getForecasts();
+    this.loadLastBackup();
   }
 
-  getForecasts() {
-    this.http.get<WeatherForecast[]>('/weatherforecast').subscribe(
-      (result) => {
-        this.forecasts = result;
-      },
-      (error) => {
-        console.error(error);
-      }
+  loadLastBackup() {
+    this.http.get<BackupLogEntry>('/api/Backup/latest').subscribe(
+      backup => this.lastBackup = backup
     );
   }
 
-  title = 'dotnet-angular-postgres-backup-tool.client';
+  formatDuration(duration?: string): string {
+    if (!duration) {
+      return 'N/A';
+    }
+  
+    const timeParts = duration.split(':').map(Number);
+    const hours = timeParts[0];
+    const minutes = timeParts[1];
+    const seconds = timeParts[2];
+  
+    let result = '';
+  
+    if (hours > 0) {
+      result += `${hours} hour${hours > 1 ? 's' : ''}, `;
+    }
+    if (minutes > 0) {
+      result += `${minutes} minute${minutes > 1 ? 's' : ''}, `;
+    }
+    result += `${seconds} second${seconds !== 1 ? 's' : ''}`;
+  
+    return result;
+  }
 }

@@ -39,7 +39,7 @@ namespace dotnet_angular_postgres_backup_tool.Server.Services
 
                 Directory.CreateDirectory(backupDir);
 
-                var backupFileName = $"backup_{dbName}_{DateTime.UtcNow:yyyy-MM-dd_HH-mmss}.sql";
+                var backupFileName = $"backup_{dbName}_{DateTime.UtcNow:yyyy-MM-dd_HH-mm}.sql";
                 var backupPath = Path.Combine(backupDir, backupFileName);
 
                 _logger.LogInformation($"Backup will be saved to: {backupPath}");

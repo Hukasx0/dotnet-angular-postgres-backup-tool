@@ -1,6 +1,6 @@
 @dotnet_angular_postgres_backup_tool.Server_HostAddress = http://localhost:5168
 
-GET {{dotnet_angular_postgres_backup_tool.Server_HostAddress}}/weatherforecast/
+GET {{dotnet_angular_postgres_backup_tool.Server_HostAddress}}/api/Backup
 Accept: application/json
 
 ###
