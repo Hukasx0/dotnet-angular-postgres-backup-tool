@@ -1,71 +1,80 @@
-﻿<div>
-    <h2>Postgres Database Backup System</h2>
+﻿<div class="container">
+    <h2 class="mt-4">Postgres Database Backup System</h2>
 
-    @if (lastBackup) {
-        <div>
+    <div class="mt-5">
         <h3>Latest Backup</h3>
-        <p>Database Name: {{ lastBackup.databaseName }}</p>
-        <p>Date: {{ lastBackup.backupDate | date:'dd/MM/yyyy HH:mm:ss' }}</p>
-        @switch (lastBackup.status.toString()) {
-            @case ("0") {
-                <p>Status: In progress</p>
-            }
-            @case ("1") {
-                <p>Status: Completed</p>
-            }
-            @case ("2") {
-                <p>Status: Failed</p>
-            }
-            @default {
-                <p>Status: Unknown</p>
-            }
-        }
-        @if (lastBackup.errorMessage) {
-            <p>Error Message: {{ lastBackup.errorMessage }}</p>
-        }
-        @if (lastBackup.backupSizeBytes) {
-            <p>Backup Size: {{ lastBackup.backupSizeBytes / (1024 * 1024) | number: '1.0-2' }} MB</p>
-        }
-        @if (lastBackup.duration) {
-            <p>Duration: {{ formatDuration(lastBackup.duration) }}</p>
-        }
-        </div>
-    }
-    @else {
-        <div>
-            <h3>No backup found</h3>
-        </div>
-    }
-
-    <div style="padding-top: 50px">
-        <h3>Backup History</h3>
-        @for (backup of backups; track backup) {
-            <div>
-                <h3>Backup #{{ backup.id }}</h3>
-                <p>Database Name: {{ backup.databaseName }}</p>
-                <p>Date: {{ backup.backupDate | date:'dd/MM/yyyy HH:mm:ss' }}</p>
-                @switch (backup.status.toString()) {
+        @if (lastBackup) {
+            <div class="mt-3 p-3 border rounded bg-light">
+                <p><strong>Database Name:</strong> {{ lastBackup.databaseName }}</p>
+                <p><strong>Date:</strong> {{ lastBackup.backupDate | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+                @switch (lastBackup.status.toString()) {
                     @case ("0") {
-                        <p>Status: In progress</p>
+                        <p><strong>Status:</strong> <span class="text-warning"> In progress</span></p>
                     }
                     @case ("1") {
-                        <p>Status: Completed</p>
+                        <p><strong>Status:</strong> <span class="text-success"> Completed</span></p>
                     }
                     @case ("2") {
-                        <p>Status: Failed</p>
+                        <p><strong>Status:</strong> <span class="text-danger"> Failed</span></p>
                     }
                     @default {
-                        <p>Status: Unknown</p>
+                        <p><strong>Status:</strong> <span class="text-secondary"> Unknown</span></p>
+                    }
+                }
+                @if (lastBackup.errorMessage) {
+                    <p><strong>Error Message:</strong> {{ lastBackup.errorMessage }}</p>
+                }
+                @if (lastBackup.backupPath) {
+                    <span><strong>Backup Path:</strong></span>
+                    <p>{{ lastBackup.backupPath }}</p>
+                }
+                @if (lastBackup.backupSizeBytes) {
+                    <p><strong>Backup Size:</strong> {{ lastBackup.backupSizeBytes / (1024 * 1024) | number: '1.0-2' }} MB</p>
+                }
+                @if (lastBackup.duration) {
+                    <p><strong>Duration:</strong> {{ formatDuration(lastBackup.duration) }}</p>
+                }
+            </div>
+        } @else {
+            <div class="mt-4 p-3 border rounded bg-light">
+                <h3>No backup found</h3>
+            </div>
+        }
+    </div>
+
+    <div class="mt-5">
+        <h3>Backup History</h3>
+        @for (backup of backups; track backup) {
+            <div class="mt-3 p-3 border rounded bg-light">
+                <h4>Backup #{{ backup.id }}</h4>
+                <p><strong>Database Name:</strong> {{ backup.databaseName }}</p>
+                <p><strong>Date:</strong> {{ backup.backupDate | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+                @switch (backup.status.toString()) {
+                    @case ("0") {
+                        <p><strong>Status:</strong> <span class="text-warning"> In progress</span></p>
+                    }
+                    @case ("1") {
+                        <p><strong>Status:</strong> <span class="text-success"> Completed</span></p>
+                    }
+                    @case ("2") {
+                        <p><strong>Status:</strong> <span class="text-danger"> Failed</span></p>
+                    }
+                    @default {
+                        <p><strong>Status:</strong> <span class="text-secondary"> Unknown</span></p>
                     }
                 }
                 @if (backup.errorMessage) {
-                    <p>Error Message: {{ backup.errorMessage }}</p>
+                    <p><strong>Error Message:</strong> {{ backup.errorMessage }}</p>
+                }
+                @if (backup.backupPath) {
+                    <span><strong>Backup Path:</strong></span>
+                    <p>{{ backup.backupPath }}</p>
                 }
                 @if (backup.backupSizeBytes) {
-                    <p>Backup Size: {{ backup.backupSizeBytes / (1024 * 1024) | number: '1.0-2' }} MB</p>
+                    <p><strong>Backup Size:</strong> {{ backup.backupSizeBytes / (1024 * 1024) | number: '1.0-2' }} MB</p>
                 }
                 @if (backup.duration) {
-                    <p>Duration: {{ formatDuration(backup.duration) }}</p>
+                    <p><strong>Duration:</strong> {{ formatDuration(backup.duration) }}</p>
                 }
             </div>
         }
