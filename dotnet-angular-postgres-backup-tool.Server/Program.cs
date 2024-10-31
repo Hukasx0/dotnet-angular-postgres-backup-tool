@@ -1,4 +1,7 @@
 
+using dotnet_angular_postgres_backup_tool.Server.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace dotnet_angular_postgres_backup_tool.Server
 {
     public class Program
@@ -13,6 +16,12 @@ namespace dotnet_angular_postgres_backup_tool.Server
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DatabaseConnection"))
+                .EnableSensitiveDataLogging()
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+            );
 
             var app = builder.Build();
 
