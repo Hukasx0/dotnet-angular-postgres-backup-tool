@@ -1,6 +1,9 @@
 
 using dotnet_angular_postgres_backup_tool.Server.Data;
+using dotnet_angular_postgres_backup_tool.Server.Services;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
+using Quartz.AspNetCore;
 
 namespace dotnet_angular_postgres_backup_tool.Server
 {
@@ -22,6 +25,20 @@ namespace dotnet_angular_postgres_backup_tool.Server
                 .EnableSensitiveDataLogging()
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
             );
+
+            builder.Services.AddQuartz(q =>
+            {
+                var jobKey = new JobKey("BackupJob");
+                q.AddJob<BackupService>(o => o.WithIdentity(jobKey));
+                q.AddTrigger(o =>
+                o.ForJob(jobKey).WithIdentity("BackupJobTrigger")
+                  // Every 3 hours
+                 .WithCronSchedule("0 0 */3 * * ?")
+                );
+            });
+
+            builder.Services.AddQuartzHostedService();
+
 
             var app = builder.Build();
 
