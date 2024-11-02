@@ -2,6 +2,8 @@
 
 This is a full-stack web application that automates database backups for PostgreSQL. Users can specify a database name, and the application performs every 3-hours (or any set value) backups while logging the history.
 
+![webapp screenshot](https://raw.githubusercontent.com/Hukasx0/dotnet-angular-postgres-backup-tool/main/screenshot.png)
+
 ## Technologies used
 
 The application is built using the following technologies:
