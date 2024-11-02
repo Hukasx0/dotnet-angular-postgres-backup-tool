@@ -7,6 +7,10 @@ using System.Text;
 
 namespace dotnet_angular_postgres_backup_tool.Server.Services
 {
+    /// <summary>
+    /// Service responsible for executing PostgreSQL database backups using pg_dump
+    /// Implements Quartz.IJob for scheduled execution
+    /// </summary>
     public class BackupService : IJob
     {
         private readonly AppDbContext _context;
@@ -20,11 +24,16 @@ namespace dotnet_angular_postgres_backup_tool.Server.Services
             _logger = logger;
         }
 
+        /// <summary>
+        /// Executes the backup operation as a scheduled job
+        /// </summary>
+        /// <param name="context">Job execution context provided by Quartz</param>
         public async Task Execute(IJobExecutionContext context)
         {
             _logger.LogInformation("Starting database backup...");
             var startTime = DateTime.UtcNow;
 
+            // Get database name from configuration
             var dbName = _config["BackupSettings:DbName"];
             if (string.IsNullOrWhiteSpace(dbName))
             {
@@ -34,16 +43,19 @@ namespace dotnet_angular_postgres_backup_tool.Server.Services
 
             try
             {
+                // Determine backup directory path
                 var backupDir = _config["BackupSettings:Path"] ??
                     Path.Combine(Environment.CurrentDirectory, "Backups");
 
                 Directory.CreateDirectory(backupDir);
 
+                // Generate unique backup filename using timestamp
                 var backupFileName = $"backup_{dbName}_{DateTime.UtcNow:yyyy-MM-dd_HH-mm}.sql";
                 var backupPath = Path.Combine(backupDir, backupFileName);
 
                 _logger.LogInformation($"Backup will be saved to: {backupPath}");
 
+                // Create initial backup log entry
                 var newDbLogEntry = new BackupLogEntry
                 {
                     DatabaseName = dbName,
@@ -55,15 +67,14 @@ namespace dotnet_angular_postgres_backup_tool.Server.Services
                 _context.BackupLog.Add(newDbLogEntry);
                 await _context.SaveChangesAsync();
 
+                // Execute pg_dump using Process
                 using (var process = new Process())
                 {
                     process.StartInfo = new ProcessStartInfo
                     {
+                        // Configure pg_dump process
                         // Make sure pg_dump is in PATH
                         FileName = "pg_dump",
-                        // or use
-                        // FileName = @"C:\Program Files\PostgreSQL\16\bin\pg_dump.exe",
-                        //
                         Arguments = $"-h localhost -U postgres -d \"{dbName}\" -f \"{backupPath}\"",
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
@@ -71,12 +82,14 @@ namespace dotnet_angular_postgres_backup_tool.Server.Services
                         CreateNoWindow = true,
                     };
 
+                    // Set PostgreSQL password if provided in configuration
                     if (_config["BackupSettings:PostgresPassword"] != null)
                     {
                         process.StartInfo.EnvironmentVariables["PGPASSWORD"] =
                             _config["BackupSettings:PostgresPassword"];
                     }
 
+                    // Capture process output and errors
                     var output = new StringBuilder();
                     var error = new StringBuilder();
 
@@ -96,11 +109,13 @@ namespace dotnet_angular_postgres_backup_tool.Server.Services
                         }
                     };
 
+                    // Execute backup process
                     process.Start();
                     process.BeginOutputReadLine();
                     process.BeginErrorReadLine();
                     await process.WaitForExitAsync();
 
+                    // Check for backup process errors
                     if (process.ExitCode != 0)
                     {
                         _logger.LogError($"pg_dump error: {error}");
@@ -108,6 +123,7 @@ namespace dotnet_angular_postgres_backup_tool.Server.Services
                     }
                 }
 
+                // Update backup log entry with success information
                 var backupFile = new FileInfo(backupPath);
                 var endTime = DateTime.UtcNow;
 
@@ -121,8 +137,10 @@ namespace dotnet_angular_postgres_backup_tool.Server.Services
             }
             catch (Exception e)
             {
+                // Handle backup failure
                 _logger.LogError(e, $"Backup failed for database {dbName}");
 
+                // Update or create failure log entry
                 var failedEntry = await _context.BackupLog
                     .OrderByDescending(x => x.BackupDate)
                     .FirstOrDefaultAsync();
@@ -147,6 +165,7 @@ namespace dotnet_angular_postgres_backup_tool.Server.Services
             }
             finally
             {
+                // Ensure changes are saved to database
                 await _context.SaveChangesAsync();
             }
         }
