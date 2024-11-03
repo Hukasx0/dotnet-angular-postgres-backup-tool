@@ -30,10 +30,15 @@ namespace dotnet_angular_postgres_backup_tool.Server
             {
                 var jobKey = new JobKey("BackupJob");
                 q.AddJob<BackupService>(o => o.WithIdentity(jobKey));
+
+                var cronSchedule = builder.Configuration["BackupSettings:CronSchedule"];
+
+                // if CronSchedule is not set in appsettings.json, then execute every 3 hours
+                if (cronSchedule == null) cronSchedule = "0 0 */3 * * ?";
+
                 q.AddTrigger(o =>
-                o.ForJob(jobKey).WithIdentity("BackupJobTrigger")
-                  // Every 3 hours
-                 .WithCronSchedule("0 0 */3 * * ?")
+                    o.ForJob(jobKey).WithIdentity("BackupJobTrigger")
+                    .WithCronSchedule(cronSchedule)
                 );
             });
 
